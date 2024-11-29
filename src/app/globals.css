@@ -62,3 +62,8 @@ a {
   font-weight: 200;
   font-style: normal;
 }
+
+.editor-container{
+  min-height: 400px;
+
+}

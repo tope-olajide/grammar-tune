@@ -4,7 +4,7 @@ import toolbar from './toolbar';
 
 interface EditorProps {
   readOnly: boolean;
-  defaultValue: any; // You can define a more specific type based on the structure of Delta
+  defaultValue: any; 
   onTextChange: (delta: any) => void;
   onSelectionChange: (range: any) => void;
 }
@@ -33,6 +33,7 @@ const Editor = forwardRef<Quill | null, EditorProps>(
         const editorContainer = container.appendChild(
           container.ownerDocument.createElement('div')
         );
+        editorContainer.className = 'editor-container';
         const quill = new Quill(editorContainer, {
           theme: 'snow',
           modules: {
