@@ -58,25 +58,7 @@ const App: React.FC = () => {
   };
 
 
-  const handleSubmit = async () => {
 
-    try {
-      const response = await fetch('http://127.0.0.1:8000/tokenize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text:quillRef.current!.getText() }),
-      });
-      const data = await response.json();
-      //setTokens(data.tokens);
-      console.log(data.response)
-      setErrorArray(JSON.parse(data.response))
-
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
 
   const checkGrammar = async () => {
     const response = await fetch("/grammar-check/api/check-grammar", {
@@ -98,9 +80,6 @@ const App: React.FC = () => {
         body: JSON.stringify({ text:quillRef.current!.getText() }),
       });
       const data = await response.json();
-      //setTokens(data.tokens);
-/*       console.log(data.response)
-      setErrorArray(JSON.parse(data.response)) */
       console.log(typeof data.result);
       setErrorArray(JSON.parse(data.result))
     } catch (error) {
