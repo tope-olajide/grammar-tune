@@ -4,6 +4,7 @@ import "./globals.css";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import ThemeRegistry from "@/components/ThemeRegistry/ThemeRegistry";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <AppRouterCacheProvider>
-          {children}
+        <AppRouterCacheProvider>
+        <ThemeRegistry>
+            {children}
+          </ThemeRegistry>
         </AppRouterCacheProvider>
       </body>
     </html>

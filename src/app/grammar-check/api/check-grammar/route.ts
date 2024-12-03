@@ -7,15 +7,16 @@ const key = process.env.API_KEY;
     
 export async function POST(request: Request) {
     // Parse the request body
-    const { text } = await request.json();
+    const { text, language } = await request.json();
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
-    }
+  }
+  if (!language) {
+    return NextResponse.json({ error: "Language is required" }, { status: 400 });
+  }
 
   // Ensure environment variables are defined
-
-
     if (!endpoint || !key) {
       return NextResponse.json(
         { error: "API_ENDPOINT or API_KEY is not defined in environment variables" },
@@ -24,12 +25,12 @@ export async function POST(request: Request) {
     }
   try {
 
- 
+ console.log({language})
     const escapedText = escapeText(text)
  
     const query = `
       query {
-        checkGrammarErrors(text: "${escapedText}")
+        checkGrammarErrors(text: "${escapedText}", language:"${language}")
       }
     `;
 

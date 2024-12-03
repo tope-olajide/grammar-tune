@@ -1,32 +1,27 @@
-import React, { useState, useRef } from "react";
-import { Box, Typography } from "@mui/material";
+
+import { Box } from "@mui/material";
+import { ChangeEvent, FC, RefObject } from "react";
 
 interface ContentEditableProps {
-    editorRef,
-    handleEditorChange: (text: string) => void;
-    disabled?: boolean,
-    text?,
-    setText?,
-    placeholder: string
-    isEditorEmpty: boolean
+    editorRef: RefObject<HTMLDivElement>;
+    handleEditorChange?: (e: ChangeEvent<HTMLDivElement>) => void;
+    disabled?: boolean;
 }
 
-const ContentEditable: React.FC<ContentEditableProps> = ({ editorRef, handleEditorChange, disabled = true, text, setText, placeholder, isEditorEmpty }) => {
-
-
-
+const ContentEditable: FC<ContentEditableProps> = ({ editorRef, handleEditorChange, disabled = true, }) => {
     return (
         <Box sx={{ position: "relative" }}>
             <Box
                 ref={editorRef}
                 contentEditable={disabled}
                 suppressContentEditableWarning
-                onInput={(e: any) => handleEditorChange(e)}
-
+                onInput={(e: ChangeEvent<HTMLDivElement>) => handleEditorChange?.(e)}
+                className="contenteditable-div"
                 sx={{
-                    padding: 2,
+                    padding: 5,
                     borderRadius: 0,
-                    minHeight: 400,
+                    height: 400,
+                    overflowY: "auto",
                     outline: "none",
                     typography: "body1",
                     "&:focus": {
@@ -36,8 +31,6 @@ const ContentEditable: React.FC<ContentEditableProps> = ({ editorRef, handleEdit
                     paddingBottom: 8
                 }}
             >
-
-
             </Box>
         </Box>
     );
