@@ -24,10 +24,7 @@ const toolbar = [
     [{ direction: 'rtl' }],
 
     // Blockquotes, code, and clean formatting
-    ['blockquote', 'code-block'], ['clean'],
+    ['blockquote', 'code-block'], ['clean']
 
-
-    // Subscript and superscript (requires custom modules)
-    ['subscript', 'superscript'], // Optional if custom modules are added
 ]
   export default toolbar

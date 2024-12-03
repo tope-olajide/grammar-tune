@@ -8,8 +8,7 @@ const countWords = (text: string) => {
 
 const handlePaste = (e: any,
     editorRef: React.RefObject<HTMLDivElement>,
-    setInputWordCount: React.Dispatch<React.SetStateAction<number>>,
-    setIsEditorEmpty: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setInputWordCount: React.Dispatch<React.SetStateAction<number>>) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
     const selection = window.getSelection();
@@ -22,10 +21,9 @@ const handlePaste = (e: any,
     selection!.removeAllRanges();
     selection!.addRange(range);
     setInputWordCount(countWords(editorRef.current!.innerText));
-    setIsEditorEmpty(false);
 };
   
-const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, editorRef: React.RefObject<HTMLDivElement>, setInputWordCount: React.Dispatch<React.SetStateAction<number>>, setIsEditorEmpty: React.Dispatch<React.SetStateAction<boolean>>, /* setIsExtractingPDF: React.Dispatch<React.SetStateAction<boolean>> */) => {
+const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, editorRef: React.RefObject<HTMLDivElement>, setInputWordCount: React.Dispatch<React.SetStateAction<number>>, /* setIsExtractingPDF: React.Dispatch<React.SetStateAction<boolean>> */) => {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
       const formData = new FormData();
@@ -41,7 +39,6 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, editorRef: Rea
       }
       editorRef.current!.innerHTML = "";
       editorRef.current!.innerHTML = result.data;
-      setIsEditorEmpty(false);
       setInputWordCount(countWords(editorRef.current!.innerText));
     } else {
       alert("Please select a PDF file.");
@@ -50,14 +47,13 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, editorRef: Rea
   
 const handlePasteClick = async (
     editorRef: React.RefObject<HTMLDivElement>,
-    setIsEditorEmpty: React.Dispatch<React.SetStateAction<boolean>>,
     setInputWordCount: React.Dispatch<React.SetStateAction<number>>
   ) => {
     try {
       const text = await navigator.clipboard.readText();
         if (editorRef.current) {
             editorRef.current!.innerText = text
-            setIsEditorEmpty(false);
+            
             setInputWordCount(countWords(editorRef.current!.innerText));
       }
     } catch (error) {

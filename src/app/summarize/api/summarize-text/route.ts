@@ -8,7 +8,7 @@ const key = process.env.API_KEY;
 export async function POST(request: Request) {
     // Parse the request body
     const { text, mode, summaryLength } = await request.json();
-
+console.log({mode})
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
  
     const query = `
       query {
-        checkGrammarErrors(text: "${escapedText}", length: "${summaryLength}", summaryMode: "${mode}")
+        summarizeText(text: "${escapedText}", length: "${summaryLength}", summaryMode: "${mode}")
       }
     `;
 
@@ -59,11 +59,11 @@ export async function POST(request: Request) {
       throw new Error(data.errors[0]?.message || "GraphQL error occurred");
     }
 
-    if (!data.data?.checkGrammarErrors) {
+    if (!data.data?.summarizeText) {
       throw new Error("Invalid response format");
     }
-
-    return NextResponse.json({ result: data.data.checkGrammarErrors });
+    console.log({data})
+    return NextResponse.json({ result: data.data.summarizeText });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
