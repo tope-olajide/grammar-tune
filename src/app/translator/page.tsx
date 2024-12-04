@@ -21,21 +21,27 @@ import Footer from "@/components/Footer";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
-const ParaphrasePage = () => {
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { llama3TranslationLanguages } from "../utils/llama3TranslationLanguages";
+
+const Translator = () => {
     const [tabValue, setTabValue] = useState('Normal');
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
     const outputEditorRef = useRef<HTMLDivElement | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [inputWordCount, setInputWordCount] = useState(0);
-    const placeholder = "Enter or paste your text and press Paraphrase"
+    const placeholder = "Enter or paste your text and press Translate"
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
+    const [translateFromLanguage, setTranslateFromLanguage] = useState("Detect Language");
+    const [translateToLanguage, setTranslateToLanguage] = useState("English");
 
-    const handleChange = (event: SyntheticEvent, newValue: string) => {
-        setTabValue(newValue);
-    };
+
 
 
     const handleEditorChange = () => {
@@ -52,18 +58,18 @@ const ParaphrasePage = () => {
         setIsProcessing(true);
         const mode = tabValue;
         try {
-            const response = await fetch("/paraphraser/api/", {
+            const response = await fetch("/translator/api/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode }),
+                body: JSON.stringify({ text: inputEditorRef.current?.textContent, translateFromLanguage, translateToLanguage }),
             });
             const data = await response.json();
             console.log({ result: data.result });
             outputEditorRef.current!.innerHTML = data.result;
             setNumberOfSentences(countSentences(data.result));
-                setNumberOfWords(countWords(data.result));
+            setNumberOfWords(countWords(data.result));
             setIsProcessing(false);
         } catch (error) {
             setIsProcessing(false);
@@ -93,7 +99,7 @@ const ParaphrasePage = () => {
 
     return (
         <>
-            <SideBar pageTitle="Paraphraser">
+            <SideBar pageTitle="Translator">
                 {isExtractingPDF || isProcessing ? <ProcessingAnimation /> : null}
                 <Paper elevation={2}
                     sx={{
@@ -106,33 +112,46 @@ const ParaphrasePage = () => {
                         borderBottomRightRadius: 0,
                     }}
                 >
-                    <Box sx={{ minHight: 58, width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-
-                        <Box sx={{ display: "flex", alignItems: "center", pt: 1, minWidth: 1000, }}>
-                            <Typography variant="body1" sx={{ mx: 2 }}>
-                                Modes:
-                            </Typography>
-                            <Tabs
-                                value={tabValue}
-                                onChange={handleChange}
-                                textColor="secondary"
-                                indicatorColor="secondary"
-                                aria-label="secondary tabs"
+                    <Box sx={{  width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+                    <Box sx={{minWidth:200}}>
+                      <FormControl fullWidth margin="normal" size="small">
+                            <InputLabel id="translate-from-label">Translate From</InputLabel>
+                            <Select
+                                labelId="translate-from-label"
+                                value={translateFromLanguage}
+                                onChange={(e) => setTranslateFromLanguage(e.target.value)}
+                                label="Translate From"
                             >
-                                <Tab value="Normal" label="Normal" />
-                                <Tab value="Fluency" label="Fluency" />
-                                <Tab value="Professional" label="Professional" />
-                                <Tab value="Simple" label="Simple" />
-                                <Tab value="Academic" label="Academic" />
-                                <Tab value="Creative" label="Creative" />
-                                <Tab value="Elaborative" label="Expansive" />
-                                <Tab value="Shorten" label="Shorten" />
-                            </Tabs>
-
+                                {llama3TranslationLanguages.map((language) => (
+                                    <MenuItem key={language} value={language}>
+                                        {language}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>       
                         </Box>
-                        <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
+                        <Box sx={{minWidth:200}}>
+                      <FormControl fullWidth margin="normal" size="small">
+                            <InputLabel id="translate-from-label">Translate To</InputLabel>
+                            <Select
+                                labelId="translate-from-label"
+                                value={translateToLanguage}
+                                onChange={(e) => setTranslateToLanguage(e.target.value)}
+                                label="Translate From"
+                            >
+                                {llama3TranslationLanguages.map((language) => (
+                                    <MenuItem key={language} value={language}>
+                                        {language}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>       
+                        </Box>
+                       
+
+                       {/*  <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
                             <DeleteForeverIcon />
-                        </IconButton>
+                        </IconButton> */}
 
 
                     </Box>
@@ -214,7 +233,7 @@ const ParaphrasePage = () => {
                                     }
 
                                 </Box>
-                                <Button variant="contained" onClick={paraphraseText}> Paraphrase</Button>
+                                <Button variant="contained" onClick={paraphraseText}> Translate</Button>
                             </Box>
                         </Box>
                         <Divider orientation="vertical" variant="fullWidth" flexItem />
@@ -266,4 +285,4 @@ const ParaphrasePage = () => {
     )
 }
 
-export default ParaphrasePage;
+export default Translator;
