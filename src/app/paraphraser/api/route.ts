@@ -2,18 +2,18 @@ import escapeText from "@/app/utils/escapeText";
 import { NextResponse } from "next/server";
 
 
-    const endpoint = process.env.API_ENDPOINT;
+const endpoint = process.env.API_ENDPOINT;
 const key = process.env.API_KEY;
     
 export async function POST(request: Request) {
     // Parse the request body
-    const { text, language } = await request.json();
+    const { text, mode } = await request.json();
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
   }
-  if (!language) {
-    return NextResponse.json({ error: "Language is required" }, { status: 400 });
+  if (!mode) {
+    return NextResponse.json({ error: "Mode is required" }, { status: 400 });
   }
 
   // Ensure environment variables are defined
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
  
     const query = `
       query {
-        checkGrammarErrors(text: "${escapedText}", language:"${language}")
+        paraphraseText(text: "${escapedText}", mode:"${mode}")
       }
     `;
 
@@ -53,11 +53,11 @@ export async function POST(request: Request) {
       throw new Error(data.errors[0]?.message || "GraphQL error occurred");
     }
 
-    if (!data.data?.checkGrammarErrors) {
+    if (!data.data?.paraphraseText) {
       throw new Error("Invalid response format");
     }
 
-    return NextResponse.json({ result: data.data.checkGrammarErrors });
+    return NextResponse.json({ result: data.data.paraphraseText });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });

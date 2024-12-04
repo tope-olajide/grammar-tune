@@ -62,7 +62,7 @@ export default function MobileNav({ pageTitle }: { pageTitle:string }) {
         <Link underline="none" href="/summarize">
           <Tab icon={<ShortTextIcon />} label="Summarizer" />
         </Link>
-        <Link underline="none" href="#">
+        <Link underline="none" href="/paraphraser">
           <Tab icon={<HistoryEduIcon />} label="Paraphraser" />
         </Link>
         <Link underline="none" href="#">

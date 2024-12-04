@@ -22,27 +22,21 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
 const SummarizePage = () => {
-    const [tabValue, setTabValue] = useState('Paragraph');
+    const [tabValue, setTabValue] = useState('Normal');
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
     const outputEditorRef = useRef<HTMLDivElement | null>(null);
-    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [inputWordCount, setInputWordCount] = useState(0);
     const placeholder = "Enter or paste your text and press Summarize"
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
-    const [sliderValue, setSliderValue] = useState(30);
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
-    /*  const [summarizedText, setSummarizedText] = useState(""); */
 
     const handleChange = (event: SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
     };
-    function valuetext(value: number) {
-        console.log(value)
-        setSliderValue(value)
-        return `${value}`;
-    }
+
 
     const handleEditorChange = () => {
 
@@ -53,56 +47,26 @@ const SummarizePage = () => {
         await handleFileChange(e, inputEditorRef, setInputWordCount)
         setIsExtractingPDF(false)
     }
-    function formatToArray(input: string) {
-        try {
-            // Remove surrounding square brackets and trim extra spaces or newlines
-            const trimmedInput = input.trim().slice(1, -1).trim();
 
-            // Split the string into an array by newline and remove extra quotation marks and whitespace
-            const formattedArray = trimmedInput
-                .split('\n')
-                .map(line => line.trim()) // Remove leading/trailing spaces
-                .filter(line => line) // Remove empty lines
-                .map(line => line.replace(/^"|"$/g, '')); // Remove surrounding quotes
-
-            return formattedArray;
-        } catch (error) {
-            console.error('Error formatting the input:', error);
-            return [];
-        }
-    }
-    const summarizeText = async () => {
-        setIsSummarizing(true);
-        const summaryLength = sliderValue === 10 ? "Brief" : sliderValue === 20 ? "Concise" : sliderValue === 30 ? "Detailed" : "Comprehensive";
+    const paraphraseText = async () => {
+        setIsProcessing(true);
         const mode = tabValue;
-        const text = inputEditorRef.current?.textContent
-        console.log({ mode, summaryLength, text })
         try {
-            const response = await fetch("/summarize/api/summarize-text", {
+            const response = await fetch("/paraphraser/api/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode, summaryLength }),
+                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode }),
             });
             const data = await response.json();
             console.log({ result: data.result });
-            console.log({ type: Array.isArray(formatToArray(data.result)) });
-            // setSummarizedText(data.result)
-
-            // Check if result is array and create HTML list
-            if (Array.isArray(formatToArray(data.result)) && formatToArray(data.result).length > 1) {
-                const formattedArray = formatToArray(data.result);
-                const listItems = formattedArray.map(item => `<li>${item}</li>`).join('');
-                const list = `<ul>${listItems}</ul>`;
-                outputEditorRef.current!.innerHTML = list;
-                setNumberOfSentences(countSentences(data.result));
+            outputEditorRef.current!.innerHTML = data.result;
+            setNumberOfSentences(countSentences(data.result));
                 setNumberOfWords(countWords(data.result));
-            } else {
-                outputEditorRef.current!.innerHTML = data.result;
-            } setIsSummarizing(false);
+            setIsProcessing(false);
         } catch (error) {
-            setIsSummarizing(false);
+            setIsProcessing(false);
             console.error('Error:', error);
         }
 
@@ -114,8 +78,6 @@ const SummarizePage = () => {
             await copyToClipboard(text);
             alert("Text copied to clipboard!");
         }
-
-
     };
 
     const handleExport = () => {
@@ -131,8 +93,8 @@ const SummarizePage = () => {
 
     return (
         <>
-            <SideBar pageTitle="Summarize">
-                {isExtractingPDF || isSummarizing ? <ProcessingAnimation /> : null}
+            <SideBar pageTitle="Paraphraser">
+                {isExtractingPDF || isProcessing ? <ProcessingAnimation /> : null}
                 <Paper elevation={2}
                     sx={{
                         width: "90%",
@@ -157,33 +119,16 @@ const SummarizePage = () => {
                                 indicatorColor="secondary"
                                 aria-label="secondary tabs"
                             >
-                                <Tab value="Paragraph" label="Paragraph" />
-                                <Tab value="Bullet Points" label="Bullet Points" />
+                                <Tab value="Normal" label="Normal" />
+                                <Tab value="Fluency" label="Fluency" />
+                                <Tab value="Professional" label="Professional" />
+                                <Tab value="Simple" label="Simple" />
+                                <Tab value="Academic" label="Academic" />
+                                <Tab value="Creative" label="Creative" />
+                                <Tab value="Elaborative" label="Expansive" />
+                                <Tab value="Shorten" label="Shorten" />
                             </Tabs>
-                            {tabValue === "Paragraph" ?
-                                <Box sx={{ display: "flex", mb: 0, alignItems: "center" }}>
-                                    <Typography variant="body1" sx={{ ml: 5, mr: 1, fontWeight: 600, color: "rgba(0,0,0,0.6)", fontSize: 14, textTransform: "uppercase" }}>
-                                        Summary Length:
-                                    </Typography>  <Box sx={{ width: 280, display: "flex", alignItems: "center", }}>
-                                        <Typography variant="body1" sx={{ mx: 2, fontWeight: 400 }}>
-                                            Short
-                                        </Typography>
-                                        <Slider
-                                            aria-label="Summary length"
-                                            defaultValue={sliderValue}
-                                            getAriaValueText={valuetext}
-                                            valueLabelDisplay="off"
-                                            shiftStep={30}
-                                            step={10}
-                                            marks
-                                            min={10}
-                                            max={40}
-                                        />
-                                        <Typography variant="body1" sx={{ mx: 2, fontWeight: 400 }}>
-                                            Long
-                                        </Typography>
-                                    </Box>
-                                </Box> : null}
+
                         </Box>
                         <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
                             <DeleteForeverIcon />
@@ -219,12 +164,12 @@ const SummarizePage = () => {
                                         alignItems: "center", justifyContent: "center",
                                         cursor: "pointer",
                                         flexDirection: "column",
-                                        borderColor: "primary.main" 
+                                        borderColor: "primary.main"
                                     }}
                                         onClick={() => handlePasteClick(inputEditorRef, setInputWordCount)}
                                     >
-                                        <ContentPasteIcon sx={{ color: "primary.main" }}  />
-                                        <Typography variant="body1" sx={{ fontWeight: 600,  color: "primary.main"  }}>
+                                        <ContentPasteIcon sx={{ color: "primary.main" }} />
+                                        <Typography variant="body1" sx={{ fontWeight: 600, color: "primary.main" }}>
                                             Paste Text
                                         </Typography>
                                     </Box></> : null}
@@ -236,7 +181,7 @@ const SummarizePage = () => {
                                 justifyContent: "space-between",
                                 px: 2,
                                 boxShadow: "0px 1px 7px rgba(0, 0, 0, 0.2)",
-                                background:"#fff"
+                                background: "#fff"
                             }}>
                                 <Box>
                                     {!inputWordCount ? <Box>
@@ -269,7 +214,7 @@ const SummarizePage = () => {
                                     }
 
                                 </Box>
-                                <Button variant="contained" onClick={summarizeText}> Summarize</Button>
+                                <Button variant="contained" onClick={paraphraseText}> Paraphrase</Button>
                             </Box>
                         </Box>
                         <Divider orientation="vertical" variant="fullWidth" flexItem />
@@ -283,17 +228,17 @@ const SummarizePage = () => {
                                 justifyContent: "space-between",
                                 px: 2,
                                 boxShadow: "0px 1px 7px rgba(0, 0, 0, 0.2)",
-                                background:"#fff"
+                                background: "#fff"
                             }}>
                                 <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
                                     <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)", }}>
-                                        {numberOfSentences} {numberOfSentences===1?"Sentence":"Sentences"}
+                                        {numberOfSentences} {numberOfSentences === 1 ? "Sentence" : "Sentences"}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)", mx: 1 }}>
                                         ●
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)" }}>
-                                        {numberOfWords} {numberOfSentences===1?"Word":"Words"}
+                                        {numberOfWords} {numberOfSentences === 1 ? "Word" : "Words"}
                                     </Typography> </Box>
                                 {/*   <Divider orientation="vertical" flexItem /> */}
 
