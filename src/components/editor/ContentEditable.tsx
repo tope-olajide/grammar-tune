@@ -25,8 +25,8 @@ const ContentEditable: FC<ContentEditableProps> = ({ editorRef, handleEditorChan
                     outline: "none",
                     typography: "body1",
                     "&:focus": {
-                        border: "1px solid",
-                        borderColor: "primary.main",
+                        border: "1px solid rgba(0,0,200,0.3)",
+                       /*  borderColor: "primary.main", */
                     },
                     paddingBottom: 8
                 }}
