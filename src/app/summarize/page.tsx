@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
-// @ts-ignore: Temporary bypass for production launch
 
 "use client"
 
@@ -10,17 +7,20 @@ import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import {  SyntheticEvent, useRef, useState } from "react";
+import { SyntheticEvent, useRef, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Slider from '@mui/material/Slider';
-import { countWords, handleFileChange, handlePasteClick } from "../utils/commonFunctions";
+import { clearEditorContent, copyToClipboard, countWords, exportTextAsFile, handleFileChange, handlePasteClick } from "../utils/commonFunctions";
 import PublishIcon from "@mui/icons-material/Publish";
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import ProcessingAnimation from "@/components/ProcessingAnimation";
 import SideBar from "@/components/SideNavigationBar";
 import Footer from "@/components/Footer";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import IconButton from "@mui/material/IconButton";
 const SummarizePage = () => {
     const [tabValue, setTabValue] = useState('Paragraph');
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
@@ -31,7 +31,7 @@ const SummarizePage = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
     const [sliderValue, setSliderValue] = useState(30);
-   /*  const [summarizedText, setSummarizedText] = useState(""); */
+    /*  const [summarizedText, setSummarizedText] = useState(""); */
 
     const handleChange = (event: SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
@@ -51,7 +51,7 @@ const SummarizePage = () => {
         await handleFileChange(e, inputEditorRef, setInputWordCount)
         setIsExtractingPDF(false)
     }
-    function formatToArray(input:string) {
+    function formatToArray(input: string) {
         try {
             // Remove surrounding square brackets and trim extra spaces or newlines
             const trimmedInput = input.trim().slice(1, -1).trim();
@@ -85,8 +85,8 @@ const SummarizePage = () => {
             });
             const data = await response.json();
             console.log({ result: data.result });
-            console.log({ type:  Array.isArray(formatToArray(data.result)) });
-           // setSummarizedText(data.result)
+            console.log({ type: Array.isArray(formatToArray(data.result)) });
+            // setSummarizedText(data.result)
 
             // Check if result is array and create HTML list
             if (Array.isArray(formatToArray(data.result)) && formatToArray(data.result).length > 1) {
@@ -104,6 +104,27 @@ const SummarizePage = () => {
 
 
     }
+    const handleCopy = async () => {
+        const text = outputEditorRef.current?.textContent;
+        if (text?.trim()) {
+            await copyToClipboard(text);
+            alert("Text copied to clipboard!");
+        }
+
+
+    };
+
+    const handleExport = () => {
+        const text = outputEditorRef.current?.textContent;
+        if (text) {
+            exportTextAsFile(text, "MyTextFile.txt");
+        }
+    };
+    const handleClearEditor = () => {
+        clearEditorContent(inputEditorRef)
+        clearEditorContent(outputEditorRef)
+    }
+
     return (
         <>
             <SideBar pageTitle="Summarize">
@@ -159,10 +180,10 @@ const SummarizePage = () => {
                                         </Typography>
                                     </Box>
                                 </Box> : null}
-
                         </Box>
-
-                        <DeleteForeverIcon />
+                        <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
+                            <DeleteForeverIcon />
+                        </IconButton>
 
 
                     </Box>
@@ -176,7 +197,7 @@ const SummarizePage = () => {
                             <ContentEditable editorRef={inputEditorRef}
                                 handleEditorChange={handleEditorChange} />
                             {!inputWordCount ?
-                                <><Box sx={{ position: "absolute", top: 0, pl: 2, mt: 2.5 }}>
+                                <><Box sx={{ position: "absolute", top: 0, pl: 5, mt: 5 }}>
                                     <span
                                         style={{
                                             color: "#aaa",
@@ -202,13 +223,14 @@ const SummarizePage = () => {
                                             Paste Text
                                         </Typography>
                                     </Box></> : null}
-                            <Paper elevation={2} sx={{
+                            <Box sx={{
                                 width: "100%", height: 60,
                                 position: "absolute", bottom: 0,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "space-between",
-                                px: 2
+                                px: 2,
+                                boxShadow: "0px 1px 7px rgba(0, 0, 0, 0.2)"
                             }}>
                                 <Box>
                                     {!inputWordCount ? <Box>
@@ -242,11 +264,46 @@ const SummarizePage = () => {
 
                                 </Box>
                                 <Button variant="contained" onClick={summarizeText}> Summarize</Button>
-                            </Paper>
+                            </Box>
                         </Box>
                         <Divider orientation="vertical" variant="fullWidth" flexItem />
-                        <Box sx={{ width: "100%", height: "100%" }}>
+                        <Box sx={{ width: "100%", height: "100%", position: "relative", borderBottom: { xs: "1px solid rgba(0,0,0,0.3)", sm: "none" } }}>
                             <ContentEditable editorRef={outputEditorRef} disabled={true} />
+                            <Box sx={{
+                                width: "100%", height: 60,
+                                position: "absolute", bottom: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                px: 2,
+                                boxShadow: "0px 1px 7px rgba(0, 0, 0, 0.2)"
+                            }}>
+                                <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+                                    <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)", }}>
+                                        2 Sentences
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)", mx: 1 }}>
+                                        ●
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)" }}>
+                                        69 Words
+                                    </Typography> </Box>
+                                {/*   <Divider orientation="vertical" flexItem /> */}
+
+
+                                <Box sx={{ display: "flex", alignItems: "center" }}>
+                                    <Box sx={{ pr: 1 }} >
+
+                                        <IconButton aria-label="delete" size="large" onClick={handleExport}>
+                                            <FileDownloadIcon />
+                                        </IconButton>
+                                    </Box>
+
+                                    <IconButton aria-label="copy" size="large" onClick={handleCopy}>
+                                        <ContentCopyIcon />
+                                    </IconButton>
+                                </Box>
+                            </Box>
                         </Box>
                     </Box>
                 </Paper>

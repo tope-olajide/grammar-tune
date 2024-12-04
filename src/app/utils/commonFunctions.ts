@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, MutableRefObject } from "react";
 
 const countWords = (text: string) => {
     const words = text.split(" ");
@@ -59,6 +59,39 @@ const handlePasteClick = async (
     } catch (error) {
       console.error("Unable to read clipboard data: ", error);
     }
-  };
+};
   
-export {countWords, handlePaste, handleFileChange, handlePasteClick};
+ const exportTextAsFile = (text:string, filename = "document.txt") => {
+  const blob = new Blob([text], { type: "text/plain" }); 
+  const url = URL.createObjectURL(blob); 
+  const link = document.createElement("a"); 
+  link.href = url; 
+  link.download = filename; 
+  link.click(); 
+  URL.revokeObjectURL(url); 
+};
+ const copyToClipboard = async (text:string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    console.log("Text copied to clipboard:", text);
+  } catch (err) {
+    console.error("Failed to copy text to clipboard:", err);
+  }
+};
+
+ const countSentences = (text: string) => {
+  if (!text || typeof text !== "string") return 0;
+
+  // Match sentences using regular expressions
+  const sentences = text.match(/[^.!?]+[.!?]+/g);
+
+  return sentences ? sentences.length : 0;
+};
+
+const clearEditorContent = (editorRef: MutableRefObject<HTMLDivElement | null>) => {
+  if (editorRef.current) {
+    editorRef.current.innerHTML = ""
+  }
+  
+}
+export {countWords, handlePaste, handleFileChange, handlePasteClick, exportTextAsFile, copyToClipboard, countSentences, clearEditorContent};
