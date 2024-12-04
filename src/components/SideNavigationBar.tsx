@@ -272,7 +272,7 @@ export default function SideBar({ children, pageTitle }: any) {
                       : index == 2
                       ? "/paraphraser"
                       : index == 3
-                      ? "#"
+                      ? "translator"
                       : "#"
                   }
                 >
