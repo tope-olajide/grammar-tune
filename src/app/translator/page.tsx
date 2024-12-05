@@ -26,6 +26,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { llama3TranslationLanguages } from "../utils/llama3TranslationLanguages";
+import AiModelSelector from "@/components/AiModelSelector";
 
 const Translator = () => {
     const [tabValue, setTabValue] = useState('Normal');
@@ -40,7 +41,7 @@ const Translator = () => {
     const [numberOfWords, setNumberOfWords] = useState(0);
     const [translateFromLanguage, setTranslateFromLanguage] = useState("Detect Language");
     const [translateToLanguage, setTranslateToLanguage] = useState("English");
-
+    const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
 
 
 
@@ -62,7 +63,7 @@ const Translator = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, translateFromLanguage, translateToLanguage }),
+                body: JSON.stringify({ text: inputEditorRef.current?.textContent, translateFromLanguage, translateToLanguage, aiModel }),
             });
             const data = await response.json();
             console.log({ result: data.result });
@@ -111,8 +112,9 @@ const Translator = () => {
                         borderBottomRightRadius: 0,
                     }}
                 >
-                    <Box sx={{  width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-                    <Box sx={{minWidth:200}}>
+                    <Box sx={{  width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center", flexWrap:"wrap"}}>
+                    
+                        <Box sx={{ minWidth: 250 }}>
                       <FormControl fullWidth margin="normal" size="small">
                             <InputLabel id="translate-from-label">Translate From</InputLabel>
                             <Select
@@ -129,7 +131,8 @@ const Translator = () => {
                             </Select>
                         </FormControl>       
                         </Box>
-                        <Box sx={{minWidth:200}}>
+                        <Box sx={{minWidth:250}}> <AiModelSelector aiModel={aiModel} setAiModel={setAiModel} /> </Box>
+                        <Box sx={{minWidth:250}}>
                       <FormControl fullWidth margin="normal" size="small">
                             <InputLabel id="translate-from-label">Translate To</InputLabel>
                             <Select

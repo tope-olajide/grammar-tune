@@ -7,7 +7,7 @@ const key = process.env.API_KEY;
     
 export async function POST(request: Request) {
     // Parse the request body
-    const { text, translateFromLanguage, translateToLanguage } = await request.json();
+    const { text, translateFromLanguage, translateToLanguage, aiModel } = await request.json();
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
@@ -17,6 +17,9 @@ export async function POST(request: Request) {
     }
     if (!translateToLanguage) {
         return NextResponse.json({ error: "translateToLanguage is required" }, { status: 400 });
+    }
+    if (!aiModel) {
+        return NextResponse.json({ error: "aiModel is required" }, { status: 400 });
       }
 
   // Ensure environment variables are defined
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
  
     const query = `
       query {
-        translateText(text: "${escapedText}", translateFromLanguage:"${translateFromLanguage}", translateToLanguage:"${translateToLanguage}")
+        translateText(text: "${escapedText}", translateFromLanguage:"${translateFromLanguage}", translateToLanguage:"${translateToLanguage}", aiModel:"${aiModel}"  )
       }
     `;
 

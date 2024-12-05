@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 
-import { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { clearEditorContent, copyToClipboard, countSentences, countWords, exportTextAsFile, handleFileChange, handlePasteClick } from "../utils/commonFunctions";
@@ -19,6 +19,7 @@ import Footer from "@/components/Footer";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
+import AiModelSelector from "@/components/AiModelSelector";
 
 const ContentGenerator = () => {
 
@@ -31,16 +32,11 @@ const ContentGenerator = () => {
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
-
-
-
-
-
+    const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
     const handleEditorChange = () => {
-
         setInputWordCount(countWords(inputEditorRef.current!.innerText));
     };
-    const handlePDFUpload = async (e) => {
+    const handlePDFUpload = async (e: ChangeEvent<HTMLInputElement>) => {
         setIsExtractingPDF(true)
         await handleFileChange(e, inputEditorRef, setInputWordCount)
         setIsExtractingPDF(false)
@@ -48,14 +44,13 @@ const ContentGenerator = () => {
 
     const generateContent = async () => {
         setIsProcessing(true);
-
         try {
             const response = await fetch("/content-generator/api/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ topic: inputEditorRef.current?.textContent }),
+                body: JSON.stringify({ topic: inputEditorRef.current?.textContent,aiModel }),
             });
             const data = await response.json();
             outputEditorRef.current!.innerHTML = data.result;
@@ -66,8 +61,6 @@ const ContentGenerator = () => {
             setIsProcessing(false);
             console.error('Error:', error);
         }
-        
-
     }
     const handleCopy = async () => {
         const text = outputEditorRef.current?.textContent;
@@ -103,11 +96,12 @@ const ContentGenerator = () => {
                         borderBottomRightRadius: 0,
                     }}
                 >
-                    <Box sx={{ width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 2, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)" }}>  What is your content Title or Topic?</Typography>
-                        <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
+                    <Box sx={{ width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", p: 1, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center", flexWrap:"wrap" }}>
+                    
+                        <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)", textAlign:"center" }}>  What is your content Title or Topic?</Typography>
+                        <Box sx={{minWidth:230}}><AiModelSelector aiModel={aiModel} setAiModel={setAiModel} /> </Box>{/* <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
                             <DeleteForeverIcon />
-                        </IconButton>
+                        </IconButton> */}
 
 
                     </Box>
