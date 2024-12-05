@@ -21,6 +21,7 @@ import Footer from "@/components/Footer";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
+import AiModelSelector from "@/components/AiModelSelector";
 const ParaphrasePage = () => {
     const [tabValue, setTabValue] = useState('Normal');
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +33,7 @@ const ParaphrasePage = () => {
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
+    const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
 
     const handleChange = (event: SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
@@ -57,7 +59,7 @@ const ParaphrasePage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode }),
+                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode, aiModel }),
             });
             const data = await response.json();
             console.log({ result: data.result });
@@ -108,8 +110,11 @@ const ParaphrasePage = () => {
                 >
                     <Box sx={{ minHight: 58, width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 
-                        <Box sx={{ display: "flex", alignItems: "center", pt: 1, minWidth: 1000, }}>
-                            <Typography variant="body1" sx={{ mx: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", pt: 1, minWidth: 900, }}>
+                            <Box sx={{ maxWidth: 250, mr: 3 }}>
+                                <AiModelSelector aiModel={aiModel} setAiModel={setAiModel} />
+                            </Box>
+                            <Typography variant="body1" sx={{ ml: 2 }}>
                                 Modes:
                             </Typography>
                             <Tabs
@@ -118,6 +123,8 @@ const ParaphrasePage = () => {
                                 textColor="secondary"
                                 indicatorColor="secondary"
                                 aria-label="secondary tabs"
+                                variant="scrollable"
+              scrollButtons={true}
                             >
                                 <Tab value="Normal" label="Normal" />
                                 <Tab value="Fluency" label="Fluency" />

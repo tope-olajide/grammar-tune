@@ -273,7 +273,7 @@ export default function SideBar({ children, pageTitle }: any) {
                       ? "/paraphraser"
                       : index == 3
                       ? "translator"
-                      : "#"
+                      : "content-generator"
                   }
                 >
                   <ListItemButton

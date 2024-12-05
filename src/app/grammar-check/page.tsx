@@ -28,6 +28,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { CircularProgress } from "@mui/material";
 import Footer from "@/components/Footer";
 import { countWords } from "../utils/commonFunctions";
+import AiModelSelector from "@/components/AiModelSelector";
 
 
 
@@ -35,14 +36,11 @@ const Delta = Quill.import('delta');
 const Inline = Quill.import('blots/inline');
 
 class SpanBlock extends Inline {
-
   static create(value) {
     const node = super.create();
     node.setAttribute('class', 'error-highlight');
     return node;
   }
-
-
 }
 
 SpanBlock.blotName = 'errorHighlight';
@@ -74,7 +72,7 @@ const GrammarChecker: FC = () => {
   const [language, setLanguage] = useState("English (US)");
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
-
+  const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -85,6 +83,7 @@ const GrammarChecker: FC = () => {
 
   const [previousText, setPreviousText] = useState("")
   const [previousLanguage, setPreviousLanguage] = useState("")
+  const [previousAiModel, setPreviousAiModel] = useState("")
 
   let timer: NodeJS.Timeout | null = null;
 
@@ -93,21 +92,24 @@ const GrammarChecker: FC = () => {
 
     try {
 
-      if (previousText === quillRef.current?.getText() && previousLanguage === language  ) {
+      if (previousText === quillRef.current?.getText() && previousLanguage === language && previousAiModel === aiModel   ) {
         console.log("no change") 
-
+        return
+      }
+      if (quillRef.current?.getText().trim().length === 0) {
         return
       }
       console.log({ text: quillRef.current?.getText(), language: language })
       setPreviousText(quillRef.current!.getText())
       setPreviousLanguage(language)
+      setPreviousAiModel(aiModel)
       setCheckingGrammar(true);
       const response = await fetch("/grammar-check/api/check-grammar", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: quillRef.current?.getText(), language }),
+        body: JSON.stringify({ text: quillRef.current?.getText(), language, aiModel }),
       });
       const data = await response.json();
       console.log(typeof data.result);
@@ -120,8 +122,6 @@ const GrammarChecker: FC = () => {
 
   }
 
-
-
   const handleContentChange = () => {
     setWordCount(countWords(quillRef.current!.getText()))
     // Clear any existing timer
@@ -132,9 +132,6 @@ const GrammarChecker: FC = () => {
 
     // Set a new timer
     timer = setTimeout(() => {
-
-
-
       checkGrammar()
     }, 2000);
   };
@@ -196,7 +193,7 @@ const GrammarChecker: FC = () => {
 
 useEffect(() => {
   checkGrammar();
-}, [language]);
+}, [language,aiModel]);
 
   const handleChange = (event: SyntheticEvent, newValue: string) => {
     setLanguage(newValue);
@@ -302,12 +299,14 @@ useEffect(() => {
     <>
       <SideBar pageTitle="Grammar Checker">
         <Paper elevation={2} sx={{ width: { xs: "95%", sm: "90%", md: "60%" }, margin: "50px auto", borderTopRightRadius: 8, borderTopLeftRadius: 8, height: 500, overflowY: "auto", position: "relative" }}>
-          <Box sx={{ maxWidth: "inherit", display: "flex", borderTopRightRadius: 8, borderTopLeftRadius: 8, }}>
+          
+          <Box sx={{ maxWidth: "inherit", display: "flex", borderTopRightRadius: 8, borderTopLeftRadius: 8, alignItems:"center" }}>
+            <AiModelSelector aiModel={aiModel} setAiModel={setAiModel} /> 
             <Tabs
               value={language}
               onChange={handleChange}
               variant="scrollable"
-              scrollButtons="auto"
+              scrollButtons={true}
               aria-label="scrollable auto tabs example"
               sx={{ width: "100%", background: "none" }}
             >
@@ -320,14 +319,14 @@ useEffect(() => {
             {quillRef.current?.getText().trim() && (
               <>
                 <Box >
-                  {isCheckingGrammar ? <CircularProgress size={25} /> :
+                  {isCheckingGrammar ?
+                    <CircularProgress size={25} /> :
                     <><Typography sx={{ p: 0, textTransform: "capitalize", fontWeight: 600, fontSize: 15 }}>
                       {errorArray.length} Errors
                     </Typography><Typography sx={{ p: 0, textTransform: "capitalize", fontWeight: 600, fontSize: 15 }}>
                         {wordCount} words
                       </Typography></>
                   }
-
                 </Box>
                 <Divider orientation="vertical" flexItem />
                 <Box sx={{ display: "flex", alignItems: "center" }}>

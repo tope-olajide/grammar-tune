@@ -21,6 +21,7 @@ import Footer from "@/components/Footer";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
+import AiModelSelector from "@/components/AiModelSelector";
 const SummarizePage = () => {
     const [tabValue, setTabValue] = useState('Paragraph');
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +35,7 @@ const SummarizePage = () => {
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
     /*  const [summarizedText, setSummarizedText] = useState(""); */
-
+    const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
     const handleChange = (event: SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
     };
@@ -83,7 +84,7 @@ const SummarizePage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode, summaryLength }),
+                body: JSON.stringify({ text: inputEditorRef.current?.textContent, mode, summaryLength, aiModel }),
             });
             const data = await response.json();
             console.log({ result: data.result });
@@ -91,7 +92,7 @@ const SummarizePage = () => {
             // setSummarizedText(data.result)
 
             // Check if result is array and create HTML list
-            if (Array.isArray(formatToArray(data.result)) && formatToArray(data.result).length > 1) {
+           /*  if (Array.isArray(formatToArray(data.result)) && formatToArray(data.result).length > 1) {
                 const formattedArray = formatToArray(data.result);
                 const listItems = formattedArray.map(item => `<li>${item}</li>`).join('');
                 const list = `<ul>${listItems}</ul>`;
@@ -100,7 +101,11 @@ const SummarizePage = () => {
                 setNumberOfWords(countWords(data.result));
             } else {
                 outputEditorRef.current!.innerHTML = data.result;
-            } setIsSummarizing(false);
+            } */
+                setNumberOfSentences(countSentences(data.result));
+                setNumberOfWords(countWords(data.result));
+            outputEditorRef.current!.innerHTML = data.result;
+            setIsSummarizing(false);
         } catch (error) {
             setIsSummarizing(false);
             console.error('Error:', error);
@@ -144,9 +149,11 @@ const SummarizePage = () => {
                         borderBottomRightRadius: 0,
                     }}
                 >
+                    
                     <Box sx={{ minHight: 58, width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 
-                        <Box sx={{ display: "flex", alignItems: "center", pt: 1, minWidth: 1000, }}>
+                        <Box sx={{maxWidth:250}}><AiModelSelector aiModel={aiModel} setAiModel={setAiModel} /> </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", pt: 1,  }}>
                             <Typography variant="body1" sx={{ mx: 2 }}>
                                 Modes:
                             </Typography>

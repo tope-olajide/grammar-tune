@@ -68,7 +68,7 @@ export default function MobileNav({ pageTitle }: { pageTitle:string }) {
         <Link underline="none" href="/translator">
           <Tab icon={<Translate />} label="Translator" />
         </Link>
-        <Link underline="none" href="#">
+        <Link underline="none" href="content-generator">
           <Tab icon={<EditNoteIcon />} label="Content Generator" />
         </Link>
       </Tabs>

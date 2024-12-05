@@ -7,13 +7,16 @@ const key = process.env.API_KEY;
     
 export async function POST(request: Request) {
     // Parse the request body
-    const { text, language } = await request.json();
+    const { text, language, aiModel } = await request.json();
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
   }
   if (!language) {
     return NextResponse.json({ error: "Language is required" }, { status: 400 });
+  }
+  if (!aiModel) {
+    return NextResponse.json({ error: "AI Model is required" }, { status: 400 });
   }
 
   // Ensure environment variables are defined
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
  
     const query = `
       query {
-        checkGrammarErrors(text: "${escapedText}", language:"${language}")
+        checkGrammarErrors(text: "${escapedText}", language:"${language}", aiModel:"${aiModel}")
       }
     `;
 
