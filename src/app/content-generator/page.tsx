@@ -5,12 +5,10 @@ import ContentEditable from "@/components/editor/ContentEditable";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import { SyntheticEvent, useRef, useState } from "react";
+
+import { useRef, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Slider from '@mui/material/Slider';
 import { clearEditorContent, copyToClipboard, countSentences, countWords, exportTextAsFile, handleFileChange, handlePasteClick } from "../utils/commonFunctions";
 import PublishIcon from "@mui/icons-material/Publish";
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
@@ -21,25 +19,19 @@ import Footer from "@/components/Footer";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import { llama3TranslationLanguages } from "../utils/llama3TranslationLanguages";
 
-const Translator = () => {
-    const [tabValue, setTabValue] = useState('Normal');
+const ContentGenerator = () => {
+
     const inputEditorRef = useRef<HTMLDivElement | null>(null);
     const outputEditorRef = useRef<HTMLDivElement | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [inputWordCount, setInputWordCount] = useState(0);
-    const placeholder = "Enter or paste your text and press Translate"
+    const placeholder = "Enter topic here and press Generate"
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [isExtractingPDF, setIsExtractingPDF] = useState(false);
     const [numberOfSentences, setNumberOfSentences] = useState(0);
     const [numberOfWords, setNumberOfWords] = useState(0);
-    const [translateFromLanguage, setTranslateFromLanguage] = useState("Detect Language");
-    const [translateToLanguage, setTranslateToLanguage] = useState("English");
+
 
 
 
@@ -54,18 +46,18 @@ const Translator = () => {
         setIsExtractingPDF(false)
     }
 
-    const translateText = async () => {
+    const generateContent = async () => {
         setIsProcessing(true);
+
         try {
-            const response = await fetch("/translator/api/", {
+            const response = await fetch("/content-generator/api/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputEditorRef.current?.textContent, translateFromLanguage, translateToLanguage }),
+                body: JSON.stringify({ topic: inputEditorRef.current?.textContent }),
             });
             const data = await response.json();
-            console.log({ result: data.result });
             outputEditorRef.current!.innerHTML = data.result;
             setNumberOfSentences(countSentences(data.result));
             setNumberOfWords(countWords(data.result));
@@ -74,7 +66,7 @@ const Translator = () => {
             setIsProcessing(false);
             console.error('Error:', error);
         }
-
+        
 
     }
     const handleCopy = async () => {
@@ -98,7 +90,7 @@ const Translator = () => {
 
     return (
         <>
-            <SideBar pageTitle="Translator">
+            <SideBar pageTitle="Content Generator">
                 {isExtractingPDF || isProcessing ? <ProcessingAnimation /> : null}
                 <Paper elevation={2}
                     sx={{
@@ -111,46 +103,11 @@ const Translator = () => {
                         borderBottomRightRadius: 0,
                     }}
                 >
-                    <Box sx={{  width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 1, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-                    <Box sx={{minWidth:200}}>
-                      <FormControl fullWidth margin="normal" size="small">
-                            <InputLabel id="translate-from-label">Translate From</InputLabel>
-                            <Select
-                                labelId="translate-from-label"
-                                value={translateFromLanguage}
-                                onChange={(e) => setTranslateFromLanguage(e.target.value)}
-                                label="Translate From"
-                            >
-                                {llama3TranslationLanguages.map((language) => (
-                                    <MenuItem key={language} value={language}>
-                                        {language}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>       
-                        </Box>
-                        <Box sx={{minWidth:200}}>
-                      <FormControl fullWidth margin="normal" size="small">
-                            <InputLabel id="translate-from-label">Translate To</InputLabel>
-                            <Select
-                                labelId="translate-from-label"
-                                value={translateToLanguage}
-                                onChange={(e) => setTranslateToLanguage(e.target.value)}
-                                label="Translate From"
-                            >
-                                {llama3TranslationLanguages.map((language) => (
-                                    <MenuItem key={language} value={language}>
-                                        {language}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>       
-                        </Box>
-                       
-
-                       {/*  <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
+                    <Box sx={{ width: "100%", borderBottom: "1px solid rgba(0,0,0,0.1)", px: 2, overflowX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500, color: "rgba(0,0,0,0.8)" }}>  What is your content Title or Topic?</Typography>
+                        <IconButton aria-label="delete" size="large" onClick={handleClearEditor}>
                             <DeleteForeverIcon />
-                        </IconButton> */}
+                        </IconButton>
 
 
                     </Box>
@@ -232,7 +189,7 @@ const Translator = () => {
                                     }
 
                                 </Box>
-                                <Button variant="contained" onClick={translateText}> Translate</Button>
+                                <Button variant="contained" onClick={generateContent}> Generate</Button>
                             </Box>
                         </Box>
                         <Divider orientation="vertical" variant="fullWidth" flexItem />
@@ -284,4 +241,4 @@ const Translator = () => {
     )
 }
 
-export default Translator;
+export default ContentGenerator;

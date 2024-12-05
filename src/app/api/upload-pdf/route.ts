@@ -12,12 +12,11 @@ export async function POST(req: Request, res: NextApiResponse) {
       message: "File not found",
     });
   }
-  const mimeType = file.type;
+
   try {
-    /*       const fileExtension = mimeType.split("/")[1];*/
+
     const buffer = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync("./public/file.pdf", buffer);
-    const dataBuffer = fs.readFileSync("./public/file.pdf");
     const pdfExtract = new PDFExtract();
     const options: PDFExtractOptions = {};
 
@@ -31,10 +30,12 @@ export async function POST(req: Request, res: NextApiResponse) {
       }
     }
     const joinedStrData = allStrData.join(" ");
-    console.log(joinedStrData);
+    
+    // Delete the temporary PDF file
+    fs.unlinkSync("./public/file.pdf");
     return NextResponse.json({
       success: true,
-      message: "Data Extracted Successfully",
+      message: "Data Extracted Successfully", 
       data: joinedStrData,
     });
   } catch (error: any) {
