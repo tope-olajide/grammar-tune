@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
-
+console.log({data})
     if (data.errors) {
       throw new Error(data.errors[0]?.message || "GraphQL error occurred");
     }

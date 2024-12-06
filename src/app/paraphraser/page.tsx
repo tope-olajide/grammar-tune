@@ -65,7 +65,7 @@ const ParaphrasePage = () => {
             console.log({ result: data.result });
             outputEditorRef.current!.innerHTML = data.result;
             setNumberOfSentences(countSentences(data.result));
-                setNumberOfWords(countWords(data.result));
+            setNumberOfWords(countWords(data.result));
             setIsProcessing(false);
         } catch (error) {
             setIsProcessing(false);
@@ -124,7 +124,7 @@ const ParaphrasePage = () => {
                                 indicatorColor="secondary"
                                 aria-label="secondary tabs"
                                 variant="scrollable"
-              scrollButtons={true}
+                                scrollButtons={true}
                             >
                                 <Tab value="Normal" label="Normal" />
                                 <Tab value="Fluency" label="Fluency" />
