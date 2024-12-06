@@ -121,16 +121,18 @@ const GrammarChecker: FC = () => {
       });
       const data = await response.json();
       console.log(typeof data.result);
+      console.log( data.result.length );
       const grammarError: GrammarError[] = JSON.parse(data.result)
-
-      const filteredGrammarErrors = grammarError.filter(
+      
+ console.log({grammarError:JSON.parse(data.result)})
+       const filteredGrammarErrors = grammarError.filter(
         error => !ignoredErrors.includes(error.original_text)
       );  
-      setErrorArray(filteredGrammarErrors)
+      setErrorArray(filteredGrammarErrors) 
       setCheckingGrammar(false);
     } catch (error) {
       setCheckingGrammar(false);
-      console.error('Error:', error);
+      console.log('Error:'+ error);
     }
 
   }
