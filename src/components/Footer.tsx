@@ -24,6 +24,7 @@ const Footer = () => {
         }}
       >
         <h5>Made with love by <Link href="https://github.com/tope-olajide/">Temitope.js</Link></h5>
+        <h5>Powered by <Link href="https://docs.hypermode.com/modus/overview">Modus</Link></h5>
       </AppBar>
     </>
   );

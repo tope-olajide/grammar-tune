@@ -25,12 +25,19 @@ import Tab from '@mui/material/Tab';
 import Paper from "@mui/material/Paper";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { CircularProgress } from "@mui/material";
+import  CircularProgress  from "@mui/material/CircularProgress";
 import Footer from "@/components/Footer";
-import { countWords } from "../utils/commonFunctions";
+import { copyToClipboard, countWords, exportTextAsFile } from "../utils/commonFunctions";
 import AiModelSelector from "@/components/AiModelSelector";
-
-
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from "@mui/material/IconButton";
+type GrammarError = {
+  sentence: string;
+  error_type:  string; 
+  original_text: string;
+  correction: string;
+  error_details: string;
+};
 
 const Delta = Quill.import('delta');
 const Inline = Quill.import('blots/inline');
@@ -53,7 +60,7 @@ Quill.register(SpanBlock);
 const GrammarChecker: FC = () => {
   const [range, setRange] = useState<unknown>(null);
   const [readOnly, setReadOnly] = useState<boolean>(false);
-  const [errorArray, setErrorArray] = useState<any[]>([]);
+  const [errorArray, setErrorArray] = useState<GrammarError[]>([]);
   // Use a ref to access the quill instance directly
   const quillRef = useRef<Quill | null>(null);
 
@@ -73,7 +80,7 @@ const GrammarChecker: FC = () => {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
   const [aiModel, setAiModel] = useState("MetaLlama-31-405B-Instruct");
-
+  const [ignoredErrors, setIgnoredErrors] = useState([""])
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -92,14 +99,15 @@ const GrammarChecker: FC = () => {
 
     try {
 
-      if (previousText === quillRef.current?.getText() && previousLanguage === language && previousAiModel === aiModel   ) {
-        console.log("no change") 
+      if (previousText === quillRef.current?.getText()
+        && previousLanguage === language &&
+        previousAiModel === aiModel) {
+     
         return
       }
       if (quillRef.current?.getText().trim().length === 0) {
         return
       }
-      console.log({ text: quillRef.current?.getText(), language: language })
       setPreviousText(quillRef.current!.getText())
       setPreviousLanguage(language)
       setPreviousAiModel(aiModel)
@@ -113,7 +121,12 @@ const GrammarChecker: FC = () => {
       });
       const data = await response.json();
       console.log(typeof data.result);
-      setErrorArray(JSON.parse(data.result))
+      const grammarError: GrammarError[] = JSON.parse(data.result)
+
+      const filteredGrammarErrors = grammarError.filter(
+        error => !ignoredErrors.includes(error.original_text)
+      );  
+      setErrorArray(filteredGrammarErrors)
       setCheckingGrammar(false);
     } catch (error) {
       setCheckingGrammar(false);
@@ -171,6 +184,23 @@ const GrammarChecker: FC = () => {
     setErrorArray([]);
   }
 
+  const ignoreError = (error: string) => {
+    const quill = quillRef.current;
+    quill?.updateContents(new Delta()
+      .retain(originalStart, { errorHighlight: false })
+      .delete(originalTextLength)
+      .insert(targetError, { errorHighlight: false })
+    );
+
+    /* updateErrorArray(sentenceToFind, targetError, targetError) */
+    console.log({ targetError })
+        if (!ignoredErrors.includes(targetError)) {
+      setIgnoredErrors([...ignoredErrors, targetError])
+    }
+    removeErrorByIndex(targetErrorIndex)
+    setAnchorEl(null);
+  };
+  
 
   const updateErrorArray = (sentenceToFind: string, targetError: string, targetCorrection: string) => {
     setErrorArray((prevSentences) =>
@@ -190,6 +220,8 @@ const GrammarChecker: FC = () => {
       prevErrorArray.filter((_, i) => i !== index)
     );
   };
+
+
 
 useEffect(() => {
   checkGrammar();
@@ -237,6 +269,7 @@ useEffect(() => {
     }
   };
 
+
   useEffect(() => {
     if (quillRef.current) {
       const quill = quillRef.current;
@@ -258,7 +291,6 @@ useEffect(() => {
             quill.formatText(originalStart, original_text.length, {
               errorHighlight: true,
             });
-
             const sentenceToFind = sentence;
             const targetCorrection = correction;
             const targetError = original_text;
@@ -294,6 +326,20 @@ useEffect(() => {
     { label: "Netherlands (NL)" },
     { label: "Russia (RU)" },
   ];
+  const handleCopy = async () => {
+    const text = quillRef.current?.getText();
+    if (text?.trim()) {
+        await copyToClipboard(text);
+        alert("Text copied to clipboard!");
+    }
+};
+
+const handleExport = () => {
+    const text = quillRef.current?.getText();
+    if (text) {
+        exportTextAsFile(text, "MyTextFile.txt");
+    }
+};
 
   return (
     <>
@@ -337,11 +383,16 @@ useEffect(() => {
                 <Divider orientation="vertical" flexItem />
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <Box sx={{ px: 1 }} >
-                    <FileDownloadIcon />
+                  <IconButton aria-label="delete" size="large" onClick={handleExport}>
+                                            <FileDownloadIcon />
+                                        </IconButton>
                   </Box>
 
                   <Box sx={{ px: 1 }} >
-                    <ContentCopyIcon />
+                    <IconButton aria-label="copy" size="large" onClick={handleCopy}>
+                       <ContentCopyIcon />
+                      </IconButton>
+                   
                   </Box>
                 </Box>
               </>
@@ -379,7 +430,9 @@ useEffect(() => {
 
                 {errorType}
               </Typography>
-
+              <IconButton aria-label="copy" size="large" onClick={handleClose}>
+                <CloseIcon />
+                </IconButton>
             </Box>
             <Divider />
             <Typography sx={{ p: 1, px: 1, width: 300, textAlign: "center", }}>{errorDetails}</Typography>
@@ -402,7 +455,7 @@ useEffect(() => {
               <Button
                 variant="outlined"
                 sx={{ textTransform: "none", mx: 1 }}
-              /* onClick={} */
+              onClick={ignoreError}
               >
                 Ignore
               </Button>
